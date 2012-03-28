@@ -1,0 +1,230 @@
+<?php
+
+/**
+ * @file
+ * Collect email addresses from a form within a node or block
+ */
+
+/**
+ * Implements hook_menu()
+ */
+ function mailfish_menu() {
+   $items = array();
+   $items['admin/config/content/mailfish'] = array(
+       'title' => 'MailFish Settings',
+       'description' => 'Administer Mailfish Settings.',
+       'access arguments' => array('manage mailfish settings'),
+       'page callback' => 'drupal_get_form',
+       'page arguments' => array('mailfish_admin_settings_form'),
+       'access arguments' => array('manage mailfish settings'),
+       'file' => 'mailfish.admin.inc',
+       
+   );
+   return $items;
+ }
+ 
+ /**
+  * Implements hook_permission
+  */
+ function mailfish_permission() {
+   $perm = array();
+   $perm['manage mailfish settings'] = array(
+       'title' => t('Manage Mailfish settings'),
+           );
+   $perm['create mailfish subscription'] = array(
+       'title' => t('Subscribe to mailing lists'),
+       );
+   return $perm;
+ }
+ 
+
+ /*
+  * Implements hook_form_node_form_alter()
+  * @see hook_form_BASE_FORM_alter
+  */
+ function mailfish_form_node_form_alter(&$form, &$form_state, $form_id) {
+   //dpm($form_id);
+   //dpm($form);
+   //no need to return anything. Changes made by reference.
+
+   $types = variable_get('mailfish_types', array());
+   //dpm($types);
+   $node = $form['#node'];
+   //dpm($node->type);
+   if (!empty($types[$node->type]) && user_access('manage mailfish settings')) {
+     //dpm($form);
+     $form['mailfish'] = array(
+       '#title' => t('Mailfish'),
+       '#type' => 'fieldset',
+       '#collapsible' => TRUE,
+       '#collapsed' =>FALSE,
+       '#group' =>'additional_settings',
+       '#weight' => 100,
+       );
+     $form['mailfish']['mailfish_enabled'] = array(
+        '#title' => t('Collect email addresses for this node'),
+        '#type' => 'checkbox',
+        '#default value' => !empty($node->mailfish_enabled),
+      );
+     //dpm($form);
+   }
+ }
+ 
+ /**
+  * Implements hook_node_load()
+  */
+  function mailfish_node_load($nodes, $types) {
+    foreach($nodes as $node) {
+      $node->mailfish_enabled = mailfish_get_node_enabled($node->nid);
+    }
+  }
+  
+  /**
+   * Implement nook_node_insert()
+   */
+  function mailfish_node_insert($node) {
+    if (!empty($node->mailfish_enabled)) {
+      mailfish_set_node_enabled($node->nid);
+    }
+  }
+  
+  /**
+   * Implements hook_node_update()
+   */
+  function mailfish_node_update($node) {
+    mailfish_delete_node_enabled($node->nid);
+    mailfish_node_insert($node);
+  }
+  
+  /**
+   * Implements hook_node_delete()
+   */
+  function mailfish_node_delete($node) {
+    mailfish_delete_node_enabled($node->nid);
+    mailfish_delete_node_signups($node->nid);
+  }
+  
+  /**
+   * Implements hook_node_view()
+   */
+  function mailfish_node_view($node, $view_mode, $langcode) {
+    if ($node->mailfish_enabled && user_access('create mailfish subscription')) {
+     // dpm($node);
+      $node->content['mailfish'] = drupal_get_form('mailfish_email_form', $node->nid);
+      $node->content['mailfish']['#weight'] =100;
+     // dpm($node->content['mailfish']);
+    }
+  }
+  
+  function mailfish_email_form($form, $form_state, $nid) {
+    global $user;
+    $form = array();
+    $form['email'] = array(
+        '#title' => t('Email address'),
+        '#type' => 'textfield',
+        '#description' => t('Join our mailing list'),
+        '#default_value' => isset($user->mail) ? $user->mail : '',
+        );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Subscribe'),
+        );
+    $form['#nid'] = $nid;
+    return $form;  
+  }
+  
+/**
+ * Validatation handler for mailfish_email_form()
+ */
+function mailfish_email_form_validate($form, &$form_state){
+ //dpm($form_state); 
+ $email = $form_state['values']['email'];
+ if (!valid_email_address($email)) {
+   form_set_error('email' , t('Please re-enter a valid e-mail address %email', array('%email' => $email))); //takes the name of the field
+ }
+}
+
+/**
+ * Submission handler for mailfish_email_form
+ */
+function mailfish_email_form_submit($form, &$form_state) {
+  $email ;
+  
+  mailfish_signup($email, $nid);
+  drupal_set_message('You have successfully sign up for this mailing list');
+}
+  
+  /**
+   * 
+   * Determine if a node is set to display an email address form
+   * @param int $nid 
+   *  The node id of the node question
+   *  
+   * @return boolean
+   */
+  function mailfish_get_node_enabled($nid) {
+    $result = db_query("SELECT nid FROM {mailfish_enabled} 
+              WHERE nid = :nid", array(':nid' => $nid))->fetchField();
+    if ($result) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+  
+  /**
+   * Add an entry for a node's Mailfish settings
+   * @param int $nid
+   *  The node id of the node in question
+   */
+  function mailfish_set_node_enabled($nid) {
+    db_insert('mailfish_enabled')
+      ->fields(array(
+         'nid' => $nid
+         ))
+     ->execute();         
+  }
+  
+  /**
+   * Remove an entry for a node's mailfish setting
+   * @param int $nid
+   *   The node id of the node in question
+   */
+  function mailfish_delete_node_enabled($nid) {
+    db_delete('mailfish_enabled')
+      ->condition('nid', $nid)
+      ->execute();
+  }
+  
+  /**
+   * Store a mailfish email signup
+   * @param string $email
+   * @param int $nid
+   * @param unknown_type $account
+   */
+  function mailfish_signup($email, $nid, $account = NULL) {
+    if(is_null($account)) {
+      global $user;
+      $account = $user;
+    }
+      dpm($account);
+      dpm($email);
+      dpm($nid);
+      //db_insert();
+      $value = array(
+          'nid' =>$nid,
+          'uid' => $account->uid,
+          'mail' => $email,
+          'created' => REQUEST_TIME,
+          );
+      drupal_write_record('mailfish', $value); //sets sensible defauls.
+    
+  }
+  
+  /**
+   * Delete all signup for a node
+   */
+  function mailfish_delete_node_signups($nid) {
+    db_delete('mailfish')
+      ->condition('nid', $nid)
+      ->execute();
+  }
