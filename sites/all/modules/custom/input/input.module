@@ -45,6 +45,15 @@ function input_menu() {
     'page callback' => 'input_search_history_delete_page',
     'access callback' => TRUE,
   );
+  $items['admin/config/input'] = array(
+    'title' => 'Input module',
+    'description' => 'Settings for the Input module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('input_admin_settings'),
+    'access arguments' => array('access administration pages'),
+    'file' => 'input.admin.inc',
+    'file path' => drupal_get_path('module', 'input'),
+  );
   
   return $items;
 }
