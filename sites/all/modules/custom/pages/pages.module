@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Example module to demonstrate using the menu system.
+ * Example module to demonstrate using the menu system. This change will cause a conflict
  * 
  * For more information about hook_menu(), see:
  * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_menu/7
