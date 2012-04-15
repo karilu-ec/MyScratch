@@ -8,8 +8,8 @@
  * For more information about hook_menu(), see:
  * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_menu/7
  *
- * In this file, we are demonstrating how to supply a render array in a page callback
- * function.
+ * In this file, we are demonstrating how to define a path in hook_menu() that does
+ * not have a menu item.
  */
 
 /**
@@ -34,6 +34,23 @@ function pages_menu() {
     'access arguments' => array('access content'),
     'weight' => 2,
     'type' => MENU_LOCAL_TASK,
+  );
+  $items['pages/render-array/tab1'] = array(
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'title' => 'Tab 1',
+  );
+  $items['pages/render-array/tab2'] = array(
+    'title' => 'Tab 2',
+    'description' => 'Demonstrating secondary tabs.',
+    'page callback' => 'pages_render_array',
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['pages/callback'] = array(
+    'title' => 'Example of a callback type',
+    'page callback' => 'pages_render_array',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
