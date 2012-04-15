@@ -8,8 +8,8 @@
  * For more information about hook_menu(), see:
  * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_menu/7
  *
- * In this file, we are demonstrating how hook_menu() works, and how to add a simple
- * page.
+ * In this file, we are demonstrating how to supply a render array in a page callback
+ * function.
  */
 
 /**
@@ -21,6 +21,19 @@ function pages_menu() {
     'description' => 'Menu system example that returns a string.',
     'page callback' => 'pages_string',
     'access callback' => TRUE,
+  );
+  $items['pages/default'] = array(
+    'title' => 'String',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['pages/render-array'] = array(
+    'title' => 'Render array',
+    'description' => 'Menu system example using a render array.',
+    'page callback' => 'pages_render_array',
+    'access arguments' => array('access content'),
+    'weight' => 2,
+    'type' => MENU_LOCAL_TASK,
   );
 
   return $items;
@@ -43,4 +56,28 @@ function pages_string() {
   );
 
   return $output;
+}
+
+
+/**
+ * Menu callback; page callback returning a render array.
+ */
+function pages_render_array() {
+  $build = array(
+    'string_paragraph' => array(
+      '#type' => 'markup',
+      '#markup' => '<p>Pages can be returned as strings.</p>',
+    ),
+    'render_array_paragraph' => array(
+      '#type' => 'markup',
+      '#markup' => '<p>Pages can be returned as <em>render arrays<em>.</p>',
+    ),
+    'why_render_arrays' => array(
+      '#items' => array('They allow content to be modified as an array.', 'Arrays are a lot easier to modify than HTML.'),
+      '#title' => 'Render arrays are better because...',
+      '#theme' => 'item_list',
+    ),
+  );
+
+  return $build;
 }
