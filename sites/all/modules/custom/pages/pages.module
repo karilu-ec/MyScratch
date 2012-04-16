@@ -3,13 +3,13 @@
 
 /**
  * @file
- * Example module to demonstrate using the menu system. This is a change we want to keep.
+ * Example module to demonstrate using the menu system.
  * 
  * For more information about hook_menu(), see:
  * http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_menu/7
  *
- * In this file, we are demonstrating how to define a path in hook_menu() that does
- * not have a menu item.
+ * In this file, we are demonstrating how to pass arguments through the menu system.
+ * page.
  */
 
 /**
@@ -51,6 +51,12 @@ function pages_menu() {
     'page callback' => 'pages_render_array',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
+  );
+  $items['pages/argument'] = array(
+    'title' => 'Argument',
+    'description' => 'Menu system example using an argument.',
+    'page callback' => 'pages_argument',
+    'access arguments' => array('access content'),
   );
 
   return $items;
@@ -94,6 +100,19 @@ function pages_render_array() {
       '#title' => 'Render arrays are better because...',
       '#theme' => 'item_list',
     ),
+  );
+
+  return $build;
+}
+
+
+/**
+ * Menu callback; page callback returning an argument.
+ */
+function pages_argument($arg1) {
+  $build['argument_paragraph'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>' . t('The argument passed was @arg1.', array('@arg1' => $arg1)) . '</p>',
   );
 
   return $build;
