@@ -103,3 +103,14 @@ function lookandfeel_theme() {
     ),
   );
 }
+
+
+/**
+ * Implements MODULE_preprocess_HOOK().
+ *
+ * For more information, see:
+ * http://api.drupal.org/api/drupal/modules--system--theme.api.php/function/hook_preprocess_HOOK/7
+ */
+function lookandfeel_preprocess_item_list(&$variables) {
+  return;
+}
