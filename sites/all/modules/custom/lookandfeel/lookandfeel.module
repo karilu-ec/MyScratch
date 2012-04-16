@@ -112,5 +112,12 @@ function lookandfeel_theme() {
  * http://api.drupal.org/api/drupal/modules--system--theme.api.php/function/hook_preprocess_HOOK/7
  */
 function lookandfeel_preprocess_item_list(&$variables) {
-  return;
+  
+  // Make every list an ordered list.
+  $variables['type'] = 'ol';
+  
+  // Loop through items and convert any mention of "Clear caches" to a link.
+  foreach ($variables['items'] as $key => $value) {
+    $variables['items'][$key] = str_replace('Clear caches', l('Clear caches', 'admin/config/development/performance'), $value);
+  }
 }
