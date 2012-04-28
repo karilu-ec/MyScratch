@@ -1,4 +1,0 @@
-name = mailfish
-description = Example module that allows users to suscribe to nodes
-core = 7.x
-dependencies[] = block
