@@ -103,7 +103,7 @@ function articles_field_default_fields() {
       'bundle' => 'article',
       'default_value' => NULL,
       'deleted' => '0',
-      'description' => '',
+      'description' => 'Write clearly and concisely please. ',
       'display' => array(
         'default' => array(
           'label' => 'hidden',
@@ -306,6 +306,7 @@ function articles_field_default_fields() {
   t('Image');
   t('Tags');
   t('Upload an image to go with this article.');
+  t('Write clearly and concisely please. ');
 
   return $fields;
 }
