@@ -7,7 +7,11 @@ Next Release
 - Install the example-blog-feature module
 - Run the selenium test "create-about-us.html"
 - Run the selenium test "add-term-playble.html"
-
+- Add the following code to the top of settings.php
+$global_settings = dirname(__FILE__)."/global.settings.php";
+if (file_exists($global_settings)) {
+  include $global_settings;
+}
 
 1.4 (example)
 -------------------
